@@ -47,7 +47,17 @@ class DefaultPreprocessor(object):
             seg = np.copy(seg)
 
         has_seg = seg is not None
+                         
+##
+        correct_space_directions = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)  # Example values
+        correct_space_origin = (0.0, 0.0, 0.0)  # Example values
+        
+        # Set the correct space directions and space origin
+        properties['space_directions'] = correct_space_directions
+        properties['space_origin'] = correct_space_origin
 
+##
+               
         # apply transpose_forward, this also needs to be applied to the spacing!
         data = data.transpose([0, *[i + 1 for i in plans_manager.transpose_forward]])
         if seg is not None:
@@ -144,6 +154,14 @@ class DefaultPreprocessor(object):
                       plans_manager: PlansManager, configuration_manager: ConfigurationManager,
                       dataset_json: Union[dict, str]):
         data, seg, properties = self.run_case(image_files, seg_file, plans_manager, configuration_manager, dataset_json)
+
+  ##                        
+        # Update the image properties with correct metadata
+        correct_space_directions = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)  # Example values
+        correct_space_origin = (0.0, 0.0, 0.0)  # Example values
+        properties['space_directions'] = correct_space_directions
+        properties['space_origin'] = correct_space_origin                  
+ ##                         
         # print('dtypes', data.dtype, seg.dtype)
         np.savez_compressed(output_filename_truncated + '.npz', data=data, seg=seg)
         write_pickle(properties, output_filename_truncated + '.pkl')
@@ -276,6 +294,11 @@ def example_test_case_preprocessing():
     input_images = ['/home/isensee/drives/e132-rohdaten/nnUNetv2/Dataset219_AMOS2022_postChallenge_task2/imagesTr/amos_0600_0000.nii.gz', ]  # if you only have one channel, you still need a list: ['case000_0000.nii.gz']
 
     configuration = '3d_fullres'
+##
+    correct_space_directions = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)  # Example values
+    correct_space_origin = (0.0, 0.0, 0.0)  # Example values
+##    
+    
     pp = DefaultPreprocessor()
 
     # _ because this position would be the segmentation if seg_file was not None (training case)
@@ -287,6 +310,12 @@ def example_test_case_preprocessing():
                                       configuration_manager=plans_manager.get_configuration(configuration),
                                       dataset_json=dataset_json_file)
 
+##
+    # Update properties with correct metadata
+    properties['space_directions'] = correct_space_directions
+    properties['space_origin'] = correct_space_origin
+##   
+    
     # voila. Now plug data into your prediction function of choice. We of course recommend nnU-Net's default (TODO)
     return data
 
